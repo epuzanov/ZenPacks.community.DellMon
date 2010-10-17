@@ -12,9 +12,9 @@ __doc__="""info.py
 
 Representation of hardware components.
 
-$Id: info.py,v 1.1 2010/07/07 13:42:07 egor Exp $"""
+$Id: info.py,v 1.2 2010/10/17 15:36:44 egor Exp $"""
 
-__version__ = "$Revision: 1.1 $"[11:-2]
+__version__ = "$Revision: 1.2 $"[11:-2]
 
 from zope.interface import implements
 from Products.Zuul.infos import ProxyProperty
@@ -51,6 +51,32 @@ class DellStorageCntlrInfo(ComponentInfo):
     @property
     def role(self):
         return self._object.roleString()
+
+    @property
+    def status(self):
+        if not hasattr(self._object, 'statusString'): return 'Unknown'
+        else: return self._object.statusString()
+
+class DellRemoteAccessCntlrInfo(ComponentInfo):
+    implements(interfaces.IDellRemoteAccessCntlrInfo)
+
+    FWRev = ProxyProperty("FWRev")
+    SWVer = ProxyProperty("SWVer")
+    macaddress = ProxyProperty("macaddress")
+    ipaddress = ProxyProperty("ipaddress")
+    subnetmask = ProxyProperty("subnetmask")
+
+    @property
+    @info
+    def manufacturer(self):
+        pc = self._object.productClass()
+        if (pc):
+            return pc.manufacturer()
+
+    @property
+    @info
+    def product(self):
+        return self._object.productClass()
 
     @property
     def status(self):

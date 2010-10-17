@@ -12,11 +12,11 @@ __doc__="""DellExpansionCardMap
 
 DellExpansionCardMap maps the pCIDeviceTable table to cards objects
 
-$Id: DellExpansionCardMap.py,v 1.2 2010/08/14 00:07:15 egor Exp $"""
+$Id: DellExpansionCardMap.py,v 1.3 2010/10/17 19:14:57 egor Exp $"""
 
-__version__ = '$Revision: 1.2 $'[11:-2]
+__version__ = '$Revision: 1.3 $'[11:-2]
 
-from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
+from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap, GetMap
 from Products.DataCollector.plugins.DataMaps import MultiArgs
 
 class DellExpansionCardMap(SnmpPlugin):
@@ -26,6 +26,14 @@ class DellExpansionCardMap(SnmpPlugin):
     modname = "ZenPacks.community.DellMon.DellExpansionCard"
     relname = "cards"
     compname = "hw"
+
+    snmpGetMap = GetMap({ 
+        '.1.3.6.1.4.1.674.10892.1.100.2.0' : 'SWVer',
+        '.1.3.6.1.4.1.674.10892.1.1700.10.1.9.1.1': 'FWRev',
+        '.1.3.6.1.4.1.674.10892.1.1900.30.1.9.1.1.1': 'ipaddress',
+        '.1.3.6.1.4.1.674.10892.1.1900.30.1.10.1.1.1': 'subnetmask',
+        '.1.3.6.1.4.1.674.10892.1.1900.30.1.12.1.1.1': 'macaddress',
+         })
 
     snmpGetTableMaps = (
         GetTableMap('pciTable',
@@ -70,6 +78,14 @@ class DellExpansionCardMap(SnmpPlugin):
         getdata, tabledata = results
         pcicardtable = tabledata.get('pciTable')
         cntlrtable = tabledata.get('storageCntlrTable')
+        om = self.objectMap(getdata)
+        om.modname = "ZenPacks.community.DellMon.DellRemoteAccessCntlr"
+        om.slot = 0
+        om.id = self.prepId("pci%s" % om.slot)
+        om.setProductKey = MultiArgs('DRAC', 'Dell')
+        om.macaddress = self.asmac(om.macaddress)
+        om.snmpindex = '1.1.1'
+        rm.append(om)
         cntlrs = {}
         ttable = ''.join(chr(x) for x in range(256))
         for oid, cntlr in cntlrtable.iteritems():
@@ -77,11 +93,10 @@ class DellExpansionCardMap(SnmpPlugin):
             cntlrs[cntlr['_model'].translate(ttable, ' /'.lower())] = cntlr
         for oid, card in pcicardtable.iteritems():
             try:
-                cntlr = cntlrs.get(card['_model'].translate(ttable, ' /-'.lower()), None)
-                if cntlr:
-                    om = self.objectMap(cntlr)
+                scntlr = cntlrs.get(card['_model'].translate(ttable, ' /-'.lower()), None)
+                if scntlr:
+                    om = self.objectMap(scntlr)
                     om.modname = "ZenPacks.community.DellMon.DellStorageCntlr"
-                    om.model = om._model
                     om.controllerType = self.controllerTypes.get(getattr(om, 'controllerType', 0), 'Unknown')
                     om.cacheSize = "%d" % (getattr(om, '_cacheSizeM', 0) * 1048576 + getattr(om, 'cacheSize', 0))
                     om.slot = card['slot']

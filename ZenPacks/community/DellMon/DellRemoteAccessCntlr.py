@@ -8,27 +8,26 @@
 #
 ################################################################################
 
-__doc__="""DellStorageCntlr
+__doc__="""DellRemoteAccessCntlr
 
-DellStorageCntlr is an abstraction of a Dell Storage Controller.
+DellRemoteAccessCntlr is an abstraction of a Dell DRAC Controller.
 
-$Id: DellStorageCntlr.py,v 1.2 2010/10/17 19:13:22 egor Exp $"""
+$Id: DellRemoteAccessCntlr.py,v 1.0 2010/10/17 16:27:51 egor Exp $"""
 
-__version__ = "$Revision: 1.2 $"[11:-2]
+__version__ = "$Revision: 1.0 $"[11:-2]
 
-from Products.ZenUtils.Utils import convToUnits
 from DellExpansionCard import *
 
-class DellStorageCntlr(DellExpansionCard):
-    """Delll Storage Controller object"""
+class DellRemoteAccessCntlr(DellExpansionCard):
+    """Delll DRAC Controller object"""
 
     FWRev = ""
     SWVer = ""
-    role = 1
-    cacheSize = 0
-    controllerType = ""
+    ipaddress = ""
+    macaddress = ""
+    subnetmask = ""
 
-    # we monitor RAID Controllers
+    # we monitor DRAC Controllers
     monitor = True
 
     statusmap ={1: (DOT_GREY, SEV_WARNING, 'Other'),
@@ -42,26 +41,26 @@ class DellStorageCntlr(DellExpansionCard):
     _properties = DellExpansionCard._properties + (
         {'id':'FWRev', 'type':'string', 'mode':'w'},
         {'id':'SWVer', 'type':'string', 'mode':'w'},
-        {'id':'role', 'type':'int', 'mode':'w'},
-        {'id':'cacheSize', 'type':'int', 'mode':'w'},
-        {'id':'controllerType', 'type':'string', 'mode':'w'},
+        {'id':'ipaddress', 'type':'string', 'mode':'w'},
+        {'id':'macaddress', 'type':'string', 'mode':'w'},
+        {'id':'subnetmask', 'type':'string', 'mode':'w'},
     )
 
 
     factory_type_information = (
         {
-            'id'             : 'DellStorageCntlr',
-            'meta_type'      : 'DellStorageCntlr',
+            'id'             : 'DellRemoteAccessCntlr',
+            'meta_type'      : 'DellRemoteAccessCntlr',
             'description'    : """Arbitrary device grouping class""",
             'icon'           : 'ExpansionCard_icon.gif',
             'product'        : 'ZenModel',
-            'factory'        : 'manage_addDellStorageCntlr',
-            'immediate_view' : 'viewDellStorageCntlr',
+            'factory'        : 'manage_addDellRemoteAccessCntlr',
+            'immediate_view' : 'viewDellRemoteAccessCntlr',
             'actions'        :
             (
                 { 'id'            : 'status'
                 , 'name'          : 'Status'
-                , 'action'        : 'viewDellStorageCntlr'
+                , 'action'        : 'viewDellRemoteAccessCntlr'
                 , 'permissions'   : (ZEN_VIEW,)
                 },
                 { 'id'            : 'perfConf'
@@ -78,21 +77,4 @@ class DellStorageCntlr(DellExpansionCard):
           },
         )
 
-    def roleString(self):
-        """
-        Return the controller current role in human readable form
-        """
-        roles = {1: 'Enables',
-                2: 'Disabled',
-                3: 'Active',
-                99: 'Not Applicable',
-                }
-        return roles.get(self.role, roles[99])
-
-    def cacheSizeString(self):
-        """
-        Return the cache size in human readable form ie 10MB
-        """
-        return convToUnits(self.cacheSize)
-
-InitializeClass(DellStorageCntlr)
+InitializeClass(DellRemoteAccessCntlr)
