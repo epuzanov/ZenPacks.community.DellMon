@@ -12,9 +12,9 @@ __doc__="""interfaces
 
 describes the form field to the user interface.
 
-$Id: interfaces.py,v 1.1 2010/10/17 19:14:26 egor Exp $"""
+$Id: interfaces.py,v 1.2 2010/10/19 23:46:33 egor Exp $"""
 
-__version__ = "$Revision: 1.1 $"[11:-2]
+__version__ = "$Revision: 1.2 $"[11:-2]
 
 from Products.Zuul.interfaces import IComponentInfo
 from Products.Zuul.form import schema
@@ -45,9 +45,10 @@ class IDellRemoteAccessCntlrInfo(IComponentInfo):
     manufacturer = schema.Entity(title=u"Manufacturer", readonly=True,
                                 group='Details')
     product = schema.Entity(title=u"Model", readonly=True, group='Details')
+    slot = schema.Int(title=u"Slot", readonly=True, group='Details')
     FWRev = schema.Text(title=u"Firmware Revision", readonly=True,
                                 group='Details')
-    SWVer = schema.Text(title=u"Driver Version", readonly=True, group='Details')
+    SWVer = schema.Text(title=u"Drivers Pack Version", readonly=True, group='Details')
     ipaddress = schema.Text(title=u"IP Address", readonly=True,
                                 group='Network Settings')
     subnetmask = schema.Text(title=u"Subnet Mask", readonly=True,

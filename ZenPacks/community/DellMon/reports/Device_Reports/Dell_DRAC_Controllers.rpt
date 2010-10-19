@@ -35,7 +35,7 @@
         <th tal:replace="structure python:here.ZenTableManager.getTableHeader(
                             tableName,'FWRev','Firmware')"/>
         <th tal:replace="structure python:here.ZenTableManager.getTableHeader(
-                            tableName,'SWVer','Driver')"/>
+                            tableName,'SWVer','Drivers Pack')"/>
         <th tal:replace="structure python:here.ZenTableManager.getTableHeader(
                             tableName,'macaddress','IP Address')"/>
         <th tal:replace="structure python:here.ZenTableManager.getTableHeader(

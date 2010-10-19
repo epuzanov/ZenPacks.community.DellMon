@@ -26,7 +26,7 @@
     <tr>
       <td class="tableheader" align=left>Firmware</td>
       <td class="tablevalues" tal:content="here/FWRev">1</td>
-      <td class="tableheader" align=left>Driver</td>
+      <td class="tableheader" align=left>Drivers Pack</td>
       <td class="tablevalues" tal:content="here/SWVer">1</td>
     <tr>
       <td class="tableheader" align=left>IP Address</td>
@@ -37,8 +37,8 @@
     <tr>
       <td class="tableheader" align=left>MAC Address</td>
       <td class="tablevalues" tal:content="here/macaddress">1</td>
-      <td class="tableheader" align=left>Status</td>
-      <td class="tablevalues" tal:content="here/statusString">1</td>
+      <td class="tableheader" align=left>Slot</td>
+      <td class="tablevalues" tal:content="here/slot">1</td>
     </tr>
     <tr tal:condition="manager">
         <td align="left" class="tableheader" colspan="4">

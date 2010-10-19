@@ -12,9 +12,9 @@ __doc__="""info.py
 
 Representation of hardware components.
 
-$Id: info.py,v 1.2 2010/10/17 15:36:44 egor Exp $"""
+$Id: info.py,v 1.3 2010/10/19 23:46:07 egor Exp $"""
 
-__version__ = "$Revision: 1.2 $"[11:-2]
+__version__ = "$Revision: 1.3 $"[11:-2]
 
 from zope.interface import implements
 from Products.Zuul.infos import ProxyProperty
@@ -28,8 +28,8 @@ class DellStorageCntlrInfo(ComponentInfo):
 
     serialNumber = ProxyProperty("serialNumber")
     FWRev = ProxyProperty("FWRev")
-    controllerType = ProxyProperty("controllerType")
     slot = ProxyProperty("slot")
+    controllerType = ProxyProperty("controllerType")
     cacheSize = ProxyProperty("cacheSize")
 
     @property
@@ -62,6 +62,7 @@ class DellRemoteAccessCntlrInfo(ComponentInfo):
 
     FWRev = ProxyProperty("FWRev")
     SWVer = ProxyProperty("SWVer")
+    slot = ProxyProperty("slot")
     macaddress = ProxyProperty("macaddress")
     ipaddress = ProxyProperty("ipaddress")
     subnetmask = ProxyProperty("subnetmask")
