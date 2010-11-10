@@ -12,9 +12,9 @@ __doc__="""DellExpansionCardMap
 
 DellExpansionCardMap maps the pCIDeviceTable table to cards objects
 
-$Id: DellExpansionCardMap.py,v 1.4 2010/10/19 22:27:36 egor Exp $"""
+$Id: DellExpansionCardMap.py,v 1.5 2010/11/10 22:07:07 egor Exp $"""
 
-__version__ = '$Revision: 1.4 $'[11:-2]
+__version__ = '$Revision: 1.5 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
 from Products.DataCollector.plugins.DataMaps import MultiArgs
@@ -108,13 +108,15 @@ class DellExpansionCardMap(SnmpPlugin):
                     card.update(drac)
                     om = self.objectMap(card)
                     om.modname = "ZenPacks.community.DellMon.DellRemoteAccessCntlr"
-                    om.macaddress = self.asmac(om.macaddress)
+                    if hasattr(om, 'macaddress'):
+                        om.macaddress = self.asmac(om.macaddress)
                     om.snmpindex = oid.strip('.')
                 elif card['_model'].startswith('Remote Access Controller'):
                     card.update(drac)
                     om = self.objectMap(card)
                     om.modname = "ZenPacks.community.DellMon.DellRemoteAccessCntlr"
-                    om.macaddress = self.asmac(om.macaddress)
+                    if hasattr(om, 'macaddress'):
+                        om.macaddress = self.asmac(om.macaddress)
                     om.snmpindex = oid.strip('.')
                 else: 
                     om = self.objectMap(card)
