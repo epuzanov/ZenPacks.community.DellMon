@@ -14,7 +14,7 @@ DellRemoteAccessCntlr is an abstraction of a Dell DRAC Controller.
 
 $Id: DellRemoteAccessCntlr.py,v 1.2 2010/11/15 17:30:16 egor Exp $"""
 
-__version__ = "$Revision: 1.6 $"[11:-2]
+__version__ = "$Revision: 1.2 $"[11:-2]
 
 from DellExpansionCard import *
 
