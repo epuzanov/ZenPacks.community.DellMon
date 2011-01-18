@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""interfaces
 
 describes the form field to the user interface.
 
-$Id: interfaces.py,v 1.2 2010/10/19 23:46:33 egor Exp $"""
+$Id: interfaces.py,v 1.3 2011/01/11 01:08:30 egor Exp $"""
 
-__version__ = "$Revision: 1.2 $"[11:-2]
+__version__ = "$Revision: 1.3 $"[11:-2]
 
 from Products.Zuul.interfaces import IComponentInfo
 from Products.Zuul.form import schema
@@ -53,5 +53,5 @@ class IDellRemoteAccessCntlrInfo(IComponentInfo):
                                 group='Network Settings')
     subnetmask = schema.Text(title=u"Subnet Mask", readonly=True,
                                 group='Network Settings')
-    macaddress = schema.Text(title=u"IP Address", readonly=True,
+    macaddress = schema.Text(title=u"MAC Address", readonly=True,
                                 group='Network Settings')
