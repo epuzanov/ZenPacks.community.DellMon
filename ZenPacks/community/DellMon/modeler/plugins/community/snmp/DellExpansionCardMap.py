@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellExpansionCardMap
 
 DellExpansionCardMap maps the pCIDeviceTable table to cards objects
 
-$Id: DellExpansionCardMap.py,v 1.6 2010/11/11 00:07:51 egor Exp $"""
+$Id: DellExpansionCardMap.py,v 1.7 2011/09/21 18:37:40 egor Exp $"""
 
-__version__ = '$Revision: 1.6 $'[11:-2]
+__version__ = '$Revision: 1.7 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
 from Products.DataCollector.plugins.DataMaps import MultiArgs
@@ -22,7 +22,7 @@ from Products.DataCollector.plugins.DataMaps import MultiArgs
 class DellExpansionCardMap(SnmpPlugin):
     """Map Dell System Management PCI table to model."""
 
-    maptype = "DellExpansionCardMap"
+    maptype = "ExpansionCardMap"
     modname = "ZenPacks.community.DellMon.DellExpansionCard"
     relname = "cards"
     compname = "hw"
@@ -83,11 +83,21 @@ class DellExpansionCardMap(SnmpPlugin):
         log.info('processing %s for device %s', self.name(), device.id)
         rm = self.relMap()
         getdata, tabledata = results
-        cntlrs = {}
         ttable = ''.join(chr(x) for x in range(256))
         for oid, cntlr in tabledata.get('storageCntlrTable', {}).iteritems():
-            cntlr['snmpindex'] = oid.strip('.')
-            cntlrs[cntlr['_model'].translate(ttable, ' /'.lower())] = cntlr
+            try:
+                om = self.objectMap(cntlr)
+                om.snmpindex = oid.strip('.')
+                om.modname = "ZenPacks.community.DellMon.DellStorageCntlr"
+                om.controllerType = self.controllerTypes.get(getattr(om, 'controllerType', 0), 'Unknown')
+                om.cacheSize = getattr(om, '_cacheSizeM', 0) * 1048576 + getattr(om, 'cacheSize', 0)
+                om.slot = int(cntlr['slot'] != 'embedded' and 1 or 0)
+                om.id = self.prepId("pci%s" % om.slot)
+                om._manuf = getattr(om, '_manuf', 'Unknown').split('(')[0].strip()
+                om.setProductKey = MultiArgs(om._model, om._manuf)
+            except AttributeError:
+                continue
+            rm.append(om)
         drac = {}
         for drac in tabledata.get('bmcLANInterfaceTable', {}).values(): break
         for cmp in tabledata.get('applicationTable', {}).values():
@@ -98,13 +108,9 @@ class DellExpansionCardMap(SnmpPlugin):
             else: continue
         for oid, card in tabledata.get('pciTable', {}).iteritems():
             try:
-                scntlr = cntlrs.get(card['_model'].translate(ttable, ' /-'.lower()), None)
-                if scntlr:
-                    om = self.objectMap(scntlr)
-                    om.modname = "ZenPacks.community.DellMon.DellStorageCntlr"
-                    om.controllerType = self.controllerTypes.get(getattr(om, 'controllerType', 0), 'Unknown')
-                    om.cacheSize = getattr(om, '_cacheSizeM', 0) * 1048576 + getattr(om, 'cacheSize', 0)
-                    om.slot = card['slot']
+                if card['_model'].lower().endswith('e adapter'): continue
+                elif card['_model'].lower().endswith('i adapter'): continue
+                elif card['_model'].upper().startswith('PERC'): continue
                 elif 'DRAC' in card['_model']:
                     card.update(drac)
                     om = self.objectMap(card)
@@ -112,7 +118,7 @@ class DellExpansionCardMap(SnmpPlugin):
                     if hasattr(om, 'macaddress'):
                         om.macaddress = self.asmac(om.macaddress)
                     om.snmpindex = oid.strip('.')
-                elif card['_model'].startswith('Remote Access Controller'):
+                elif card['_model'].startswith('Remote Access'):
                     card.update(drac)
                     om = self.objectMap(card)
                     om.modname = "ZenPacks.community.DellMon.DellRemoteAccessCntlr"

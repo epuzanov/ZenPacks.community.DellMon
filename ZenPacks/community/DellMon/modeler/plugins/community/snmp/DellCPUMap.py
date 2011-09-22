@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -13,16 +13,17 @@ __doc__="""DellCPUMap
 DellCPUMap maps the processorDeviceTable and processorDeviceStatusTable tables
 to cpu objects
 
-$Id: DellCPUMap.py,v 1.1 2010/02/19 19:28:53 egor Exp $"""
+$Id: DellCPUMap.py,v 1.2 2011/09/21 18:34:01 egor Exp $"""
 
-__version__ = '$Revision: 1.1 $'[11:-2]
+__version__ = '$Revision: 1.2 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
+from Products.DataCollector.plugins.DataMaps import MultiArgs
 
 class DellCPUMap(SnmpPlugin):
     """Map Dell System Management cpu table to model."""
 
-    maptype = "DellCPUMap"
+    maptype = "CPUMap"
     modname = "ZenPacks.community.DellMon.DellCPU"
     relname = "cpus"
     compname = "hw"
@@ -42,7 +43,7 @@ class DellCPUMap(SnmpPlugin):
                         '.12': 'clockspeed',
                         '.13': 'extspeed',
                         '.14': 'voltage',
-                        '.16': '_version',
+                        '.16': 'setProductKey',
                         '.17': 'core',
                     }
         ),
@@ -60,29 +61,23 @@ class DellCPUMap(SnmpPlugin):
         """collect snmp information from this device"""
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
-        cputable = tabledata.get("cpuTable")
-        cachetable = tabledata.get("cacheTable")
-        if not cputable: return
-        cores = len(tabledata.get("hrProcessorTable")) / len(cputable)
-        if cores == 0: cores = 1
+        cores = len(tabledata.get("hrProcessorTable", '')) / (len(tabledata.get(
+                                                        "cpuTable", '1')) or 1)
         rm = self.relMap()
-        cpumap = {}
         cachemap = {}
-        if cachetable:
-            for cache in cachetable.values():
-                if cache['level'] > 2:
-                    if not cachemap.has_key(cache['cpuidx']):
-                        cachemap[cache['cpuidx']] = {}
-                    cachemap[cache['cpuidx']][cache['level']-2] = cache.get('size',0)
-        for cpu in cputable.values():
+        for cache in tabledata.get("cacheTable", {}).values():
+            if cache['level'] < 3: continue
+            if not cachemap.has_key(cache['cpuidx']):
+                cachemap[cache['cpuidx']] = {}
+            cachemap[cache['cpuidx']][cache['level']-2] = cache.get('size', 0)
+        for oid, cpu in tabledata.get("cpuTable", {}).iteritems():
             om = self.objectMap(cpu)
-            model = getattr(om, '_version').replace("(R)", "")
-            if not model.startswith(getattr(om, '_manuf')):
-                model = "%s_%s" %(getattr(om, '_manuf'), model)
-            om.setProductKey = model 
             om.id = self.prepId("socket%s" % (om.socket))
-            om.core = getattr(om, 'core', 0)
-            if om.core == 0: om.core = cores
+            om.core = getattr(om, 'core', 0) or cores
+            if not getattr(om, 'setProductKey', ''):
+                om.setProductKey = 'Unknown Processor'
+            om.setProductKey = MultiArgs(om.setProductKey.replace("(R)", ""),
+                                        om.setProductKey.split()[0])
             for clevel, csize in cachemap[om.socket].iteritems():
                 setattr(om, "cacheSizeL%d"%clevel, csize)
             rm.append(om)

@@ -23,7 +23,7 @@ from Products.DataCollector.plugins.DataMaps import MultiArgs
 class DellMemoryModuleMap(SnmpPlugin):
     """Map Dell System Management Memory Module table to model."""
 
-    maptype = "DellMemoryModule"
+    maptype = "MemoryModuleMap"
     modname = "ZenPacks.community.DellMon.DellMemoryModule"
     relname = "memorymodules"
     compname = "hw"
@@ -70,15 +70,13 @@ class DellMemoryModuleMap(SnmpPlugin):
         """collect snmp information from this device"""
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
-        cardtable = tabledata.get('memoryDeviceTable')
         rm = self.relMap()
-        for oid, card in cardtable.iteritems():
+        for oid, card in tabledata.get('memoryDeviceTable', {}).iteritems():
             try:
                 om = self.objectMap(card)
                 om.snmpindex = oid.strip('.')
                 om.id = self.prepId(getattr(om, '_location', 'Unknown').strip())
-                if hasattr(om, 'size'):
-                    om.size = om.size * 1024
+                om.size = int(getattr(om, 'size', 0)) * 1024
                 om.moduletype = self.moduletypes.get(getattr(om, 'moduletype', 1),
                                 '%s (%d)' % (self.moduletypes[1], om.moduletype))
                 if om.size > 0:

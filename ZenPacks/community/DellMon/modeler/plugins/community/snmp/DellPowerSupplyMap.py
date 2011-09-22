@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,16 +12,16 @@ __doc__="""DellPowerSupplyMap
 
 DellPowerSupplyMap maps the powerSupplyTable table to powersupplies objects
 
-$Id: DellPowerSupplyMap.py,v 1.1 2010/02/19 20:14:58 egor Exp $"""
+$Id: DellPowerSupplyMap.py,v 1.2 2011/09/21 19:09:48 egor Exp $"""
 
-__version__ = '$Revision: 1.1 $'[11:-2]
+__version__ = '$Revision: 1.2 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
 
 class DellPowerSupplyMap(SnmpPlugin):
     """Map Dell System Management Power Supplies table to model."""
 
-    maptype = "DellPowerSupplyMap"
+    maptype = "PowerSupplyMap"
     modname = "ZenPacks.community.DellMon.DellPowerSupply"
     relname = "powersupplies"
     compname = "hw"
@@ -72,22 +72,20 @@ class DellPowerSupplyMap(SnmpPlugin):
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
         rm = self.relMap()
-        pstable = tabledata.get('powerSupplyTable')
-        psVPtable = tabledata.get('powerSupplyVPTable')
-        psAPtable = tabledata.get('powerSupplyAPTable')
-        for oid, ps in pstable.iteritems():
+        for oid, ps in tabledata.get('powerSupplyTable', {}).iteritems():
             try:
                 om = self.objectMap(ps)
                 if getattr(om, '_presence', 0) != 1: continue
                 om.snmpindex = oid.strip('.')
                 om.id = self.prepId(getattr(om, '_location', 'Unknown'))
                 om.watts = getattr(om, 'watts', 0) / 10
-                om.type = "%s" % self.typemap.get(getattr(om, 'type', 1), '%s (%d)' %(self.typemap[1], om.type))
-                for oid, vp in psVPtable.iteritems():
+                om.type = self.typemap.get(getattr(om,'type',1),
+                                                        'Other (%d)'%om.type)
+                for oid,vp in tabledata.get('powerSupplyVPTable',{}).iteritems():
                     if vp['location'][:5] != ps['_location'][:5]: continue
                     om.vpsnmpindex = oid.strip('.')
                     om.vptype = vp.get('type')
-                for oid, ap in psAPtable.iteritems():
+                for oid,ap in tabledata.get('powerSupplyAPTable',{}).iteritems():
                     if ap['location'][:5] != ps['_location'][:5]: continue
                     om.apsnmpindex = oid.strip('.')
                     om.aptype = vp.get('type')

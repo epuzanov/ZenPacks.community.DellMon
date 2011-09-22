@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -13,9 +13,9 @@ __doc__="""DellLogicalDiskMap
 DellLogicalDiskMap maps the cpqDaLogDrvTable, cpqFcaLogDrvTable or cpqScsiLogDrvTabletables
 to disks objects
 
-$Id: DellHardDiskMap.py,v 1.1 2010/02/19 20:05:19 egor Exp $"""
+$Id: DellHardDiskMap.py,v 1.2 2011/09/21 19:06:18 egor Exp $"""
 
-__version__ = '$Revision: 1.1 $'[11:-2]
+__version__ = '$Revision: 1.2 $'[11:-2]
 
 import re
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap, GetMap
@@ -71,16 +71,18 @@ class DellLogicalDiskMap(SnmpPlugin):
         """collect snmp information from this device"""
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
-        disktable = tabledata.get('virtualDiskTable')
         rm = self.relMap()
-        for oid, disk in disktable.iteritems():
+        for oid, disk in tabledata.get('virtualDiskTable', {}).iteritems():
             try:
                 om = self.objectMap(disk)
                 om.id = self.prepId(om.id)
                 om.snmpindex = oid.strip('.')
-                om.diskType = self.diskTypes.get(getattr(om, 'diskType', 1), 'Unknown (%d)' % om.diskType)
-                om.stripesize = getattr(om, '_stripesizeM', 0) * 1048576 + getattr(om, 'stripesize', 0)
-                om.size = getattr(om, '_sizeM', 0) * 1048576 + getattr(om, 'size', 0)
+                om.diskType = self.diskTypes.get(getattr(om, 'diskType', 1),
+                                                    'Unknown (%d)'%om.diskType)
+                om.stripesize = int(getattr(om, '_stripesizeM', 0)
+                                ) * 1048576 + int(getattr(om, 'stripesize', 0))
+                om.size = int(getattr(om, '_sizeM', 0)
+                                ) * 1048576 + int(getattr(om, 'size', 0))
             except AttributeError:
                 continue
             rm.append(om)

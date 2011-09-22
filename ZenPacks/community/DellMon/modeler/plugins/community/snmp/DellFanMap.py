@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellFanMap
 
 DellFanMap maps the coolingDeviceTable table to fab objects
 
-$Id: DellFanMap.py,v 1.1 2010/02/19 19:58:07 egor Exp $"""
+$Id: DellFanMap.py,v 1.2 2011/09/21 18:39:57 egor Exp $"""
 
-__version__ = '$Revision: 1.1 $'[11:-2]
+__version__ = '$Revision: 1.2 $'[11:-2]
 
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
@@ -22,7 +22,7 @@ from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableM
 class DellFanMap(SnmpPlugin):
     """Map Dell System Management Fans table to model."""
 
-    maptype = "DellFanMap"
+    maptype = "FanMap"
     modname = "ZenPacks.community.DellMon.DellFan"
     relname = "fans"
     compname = "hw"
@@ -40,7 +40,7 @@ class DellFanMap(SnmpPlugin):
     )
 
 
-    typemap = {1: 'Other', 
+    typemap = { 1: 'Other', 
                 2: 'Unknown',
                 3: 'Fan',
                 4: 'Blower',
@@ -59,12 +59,11 @@ class DellFanMap(SnmpPlugin):
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
         rm = self.relMap()
-        fantable = tabledata.get('coolingDeviceTable')
-        for oid, fan in fantable.iteritems():
+        for oid, fan in tabledata.get('coolingDeviceTable', {}).iteritems():
             try:
                 om = self.objectMap(fan)
                 om.snmpindex = oid.strip('.')
-                om.type = self.typemap.get(getattr(om, 'type', 2), self.typemap[2])
+                om.type = self.typemap.get(getattr(om, 'type', 2), 'Unknown')
                 om.id = self.prepId(getattr(om, '_locale', 'Unknown'))
             except AttributeError:
                 continue

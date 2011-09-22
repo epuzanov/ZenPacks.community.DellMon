@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellHardDiskMap
 
 DellHardDiskMap maps the arrayDisktable to disks objects
 
-$Id: DellHardDiskMap.py,v 1.2 2010/08/14 00:08:40 egor Exp $"""
+$Id: DellHardDiskMap.py,v 1.3 2011/09/21 19:02:12 egor Exp $"""
 
-__version__ = '$Revision: 1.2 $'[11:-2]
+__version__ = '$Revision: 1.3 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap, GetMap
 from Products.DataCollector.plugins.DataMaps import MultiArgs
@@ -22,7 +22,7 @@ from Products.DataCollector.plugins.DataMaps import MultiArgs
 class DellHardDiskMap(SnmpPlugin):
     """Map Dell System Management Hard Disk table to model."""
 
-    maptype = "DellHardDiskMap"
+    maptype = "HardDiskMap"
     modname = "ZenPacks.community.DellMon.DellHardDisk"
     relname = "harddisks"
     compname = "hw"
@@ -68,21 +68,22 @@ class DellHardDiskMap(SnmpPlugin):
         """collect snmp information from this device"""
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
-        disktable = tabledata.get('arrayDiskTable')
-        if not disktable: return
         diskLocation = tabledata.get('arrayLocationTable')
         rm = self.relMap()
-        for disk, location in zip(disktable.values(), diskLocation.values()):
+        for oid, disk in tabledata.get('arrayDiskTable', {}).iteritems():
             try:
                 om = self.objectMap(disk)
-                chassis = location.get('chassis', 'Backplane')
+                chassis = tabledata.get('arrayLocationTable', {}).get(oid,
+                                                {}).get('chassis', 'Backplane')
                 om.id = self.prepId("%s %s" % (chassis, om.description))
-                om._model = getattr(om, '_model', 'hard disk')
-                om._manuf = getattr(om, '_manuf', 'Unknown')
+                om._model = getattr(om, '_model', '') or 'hard disk'
+                om._manuf = getattr(om, '_manuf', '') or 'Unknown'
                 om.description = "%s %s" % (om._manuf, om._model)
                 om.setProductKey = MultiArgs(om._model, om._manuf)
-                om.diskType = self.diskTypes.get(getattr(om, 'diskType', 1), '%s (%d)' %(self.diskTypes[1], om.diskType))
-                om.size = "%d" % (getattr(om, '_sizeM', 0) * 1048576 + getattr(om, 'size', 0))
+                om.diskType = self.diskTypes.get(getattr(om, 'diskType', 1),
+                                                    'Unknown (%d)'%om.diskType)
+                om.size = int(getattr(om, '_sizeM', 0)) * 1048576 + int(
+                                                        getattr(om, 'size', 0))
             except AttributeError:
                 continue
             rm.append(om)
