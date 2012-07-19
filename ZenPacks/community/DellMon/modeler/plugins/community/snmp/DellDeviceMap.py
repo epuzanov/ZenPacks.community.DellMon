@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009-2012 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellDeviceMap
 
 DellDeviceMap.
 
-$Id: DellDeviceMap.py,v 1.1 2010/08/13 23:59:12 egor Exp $"""
+$Id: DellDeviceMap.py,v 1.2 2012/07/19 19:54:51 egor Exp $"""
 
-__version__ = '$Revision: 1.1 $'[11:-2]
+__version__ = '$Revision: 1.2 $'[11:-2]
 
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetMap
@@ -38,7 +38,7 @@ class DellDeviceMap(SnmpPlugin):
         """collect snmp information from this device"""
         log.info('processing %s for device %s', self.name(), device.id)
         getdata, tabledata = results
-        if getdata['setHWProductKey'] is None: return None
+        if getdata.get('setHWProductKey') is None: return None
         om = self.objectMap(getdata)
         om.setHWProductKey = MultiArgs(om.setHWProductKey, "Dell")
         return om
