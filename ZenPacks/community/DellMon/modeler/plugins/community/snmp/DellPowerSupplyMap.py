@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
+# Copyright (C) 2009-2012 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellPowerSupplyMap
 
 DellPowerSupplyMap maps the powerSupplyTable table to powersupplies objects
 
-$Id: DellPowerSupplyMap.py,v 1.2 2011/09/21 19:09:48 egor Exp $"""
+$Id: DellPowerSupplyMap.py,v 1.3 2012/10/02 20:50:45 egor Exp $"""
 
-__version__ = '$Revision: 1.2 $'[11:-2]
+__version__ = '$Revision: 1.3 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
 
@@ -81,14 +81,14 @@ class DellPowerSupplyMap(SnmpPlugin):
                 om.watts = getattr(om, 'watts', 0) / 10
                 om.type = self.typemap.get(getattr(om,'type',1),
                                                         'Other (%d)'%om.type)
-                for oid,vp in tabledata.get('powerSupplyVPTable',{}).iteritems():
-                    if vp['location'][:5] != ps['_location'][:5]: continue
-                    om.vpsnmpindex = oid.strip('.')
+                for void,vp in tabledata.get('powerSupplyVPTable',{}).iteritems():
+                    if vp['location'][:4] != ps['_location'][:4]: continue
+                    om.vpsnmpindex = void.strip('.')
                     om.vptype = vp.get('type')
-                for oid,ap in tabledata.get('powerSupplyAPTable',{}).iteritems():
-                    if ap['location'][:5] != ps['_location'][:5]: continue
-                    om.apsnmpindex = oid.strip('.')
-                    om.aptype = vp.get('type')
+                for aoid,ap in tabledata.get('powerSupplyAPTable',{}).iteritems():
+                    if ap['location'][:4] != ps['_location'][:4]: continue
+                    om.apsnmpindex = aoid.strip('.')
+                    om.aptype = ap.get('type')
             except AttributeError:
                 continue
             rm.append(om)
