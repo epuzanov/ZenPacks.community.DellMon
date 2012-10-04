@@ -12,9 +12,9 @@ __doc__="""DellExpansionCardMap
 
 DellExpansionCardMap maps the pCIDeviceTable table to cards objects
 
-$Id: DellExpansionCardMap.py,v 1.8 2012/10/04 19:00:32 egor Exp $"""
+$Id: DellExpansionCardMap.py,v 1.9 2012/10/04 20:24:47 egor Exp $"""
 
-__version__ = '$Revision: 1.8 $'[11:-2]
+__version__ = '$Revision: 1.9 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
 from Products.DataCollector.plugins.DataMaps import MultiArgs
@@ -26,6 +26,7 @@ class DellExpansionCardMap(SnmpPlugin):
     modname = "ZenPacks.community.DellMon.DellExpansionCard"
     relname = "cards"
     compname = "hw"
+    deviceProperties = SnmpPlugin.deviceProperties + ('zDellExpansionCardMapIgnorePci',)
 
     snmpGetTableMaps = (
         GetTableMap('pciTable',
@@ -81,6 +82,7 @@ class DellExpansionCardMap(SnmpPlugin):
     def process(self, device, results, log):
         """collect snmp information from this device"""
         log.info('processing %s for device %s', self.name(), device.id)
+        ignorePci = getattr(device, "zDellExpansionCardMapIgnorePci", False)
         rm = self.relMap()
         getdata, tabledata = results
         ttable = ''.join(chr(x) for x in range(256))
@@ -125,7 +127,8 @@ class DellExpansionCardMap(SnmpPlugin):
                     if hasattr(om, 'macaddress'):
                         om.macaddress = self.asmac(om.macaddress)
                     om.snmpindex = oid.strip('.')
-                else: 
+                elif ignorePci: continue
+                else:
                     om = self.objectMap(card)
                     om.snmpindex = oid.strip('.')
                 om.id = self.prepId("pci%s" % om.slot)
