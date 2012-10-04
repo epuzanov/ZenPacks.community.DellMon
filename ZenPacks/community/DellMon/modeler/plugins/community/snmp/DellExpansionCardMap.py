@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010, 2011 Egor Puzanov.
+# Copyright (C) 2009-2012 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellExpansionCardMap
 
 DellExpansionCardMap maps the pCIDeviceTable table to cards objects
 
-$Id: DellExpansionCardMap.py,v 1.7 2011/09/21 18:37:40 egor Exp $"""
+$Id: DellExpansionCardMap.py,v 1.8 2012/10/04 19:00:32 egor Exp $"""
 
-__version__ = '$Revision: 1.7 $'[11:-2]
+__version__ = '$Revision: 1.8 $'[11:-2]
 
 from Products.DataCollector.plugins.CollectorPlugin import SnmpPlugin, GetTableMap
 from Products.DataCollector.plugins.DataMaps import MultiArgs
@@ -91,7 +91,7 @@ class DellExpansionCardMap(SnmpPlugin):
                 om.modname = "ZenPacks.community.DellMon.DellStorageCntlr"
                 om.controllerType = self.controllerTypes.get(getattr(om, 'controllerType', 0), 'Unknown')
                 om.cacheSize = getattr(om, '_cacheSizeM', 0) * 1048576 + getattr(om, 'cacheSize', 0)
-                om.slot = int(cntlr['slot'] != 'embedded' and 1 or 0)
+                om.slot = str(cntlr.get('slot')).isdigit() and int(cntlr['slot']) or 0
                 om.id = self.prepId("pci%s" % om.slot)
                 om._manuf = getattr(om, '_manuf', 'Unknown').split('(')[0].strip()
                 om.setProductKey = MultiArgs(om._model, om._manuf)
