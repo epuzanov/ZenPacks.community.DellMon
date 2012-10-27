@@ -45,7 +45,7 @@ user.
 
     ::
 
-        zenpack --install ZenPacks.community.DellMon-2.4.6.egg
+        zenpack --install ZenPacks.community.DellMon-2.5.0.egg
         zenoss restart
 
 Developer Installation (link mode)
@@ -116,4 +116,5 @@ Reports
 MIBs
 ----
 
-- **MIB-Dell-10892 MIB**
+- **MIB-Dell-10892**
+- **ArrayManager-MIB**
