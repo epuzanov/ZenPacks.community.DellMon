@@ -1,7 +1,7 @@
 ################################################################################
 #
 # This program is part of the DellMon Zenpack for Zenoss.
-# Copyright (C) 2009, 2010 Egor Puzanov.
+# Copyright (C) 2009-2012 Egor Puzanov.
 #
 # This program can be used under the GNU General Public License version 2
 # You can find full information here: http://www.zenoss.com/oss
@@ -12,9 +12,9 @@ __doc__="""DellPowerSupply
 
 DellPowerSupply is an abstraction of a PowerSupply.
 
-$Id: DellPowerSupply.py,v 1.1 2010/06/30 22:07:35 egor Exp $"""
+$Id: DellPowerSupply.py,v 1.2 2012/11/01 17:55:54 egor Exp $"""
 
-__version__ = "$Revision: 1.1 $"[11:-2]
+__version__ = "$Revision: 1.2 $"[11:-2]
 
 import inspect
 from Products.ZenModel.PowerSupply import *
@@ -23,7 +23,6 @@ from DellComponent import *
 class DellPowerSupply(PowerSupply, DellComponent):
     """PowerSupply object"""
 
-    state = property(fget=lambda self: self.statusString())
     status = 1
     volts = 0
     vpsnmpindex = ""
@@ -118,13 +117,12 @@ class DellPowerSupply(PowerSupply, DellComponent):
         snmpindex = self.__snmpindex
         frame = inspect.currentframe(2)
         try:
-            if 'templ' in frame.f_locals:
-                templ = frame.f_locals['templ'].id
-                if templ == 'DellPowerSupplyVP':
-                    snmpindex = self.vpsnmpindex
-                if templ == 'DellPowerSupplyAP':
-                    snmpindex = self.apsnmpindex
-        finally: del frame
+            if frame.f_locals.get('oid') == '1.3.6.1.4.1.674.10892.1.600.20.1.6':
+                snmpindex = self.vpsnmpindex
+            elif frame.f_locals.get('oid')=='1.3.6.1.4.1.674.10892.1.600.30.1.6':
+                snmpindex = self.apsnmpindex
+        finally:
+            del frame
         return snmpindex
 
     def _setSnmpIndex(self, value):
@@ -135,10 +133,9 @@ class DellPowerSupply(PowerSupply, DellComponent):
                         )
 
     def setState(self, value):
-        self.status = 0
         for intvalue, status in self.statusmap.iteritems():
-            if status[2].upper() != value.upper(): continue 
-            self.status = value
+            if status[2].upper() != str(value).upper(): continue
+            self.status = intvalue
             break
 
     state = property(fget=lambda self: self.statusString(),
