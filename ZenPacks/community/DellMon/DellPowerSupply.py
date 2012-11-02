@@ -12,9 +12,9 @@ __doc__="""DellPowerSupply
 
 DellPowerSupply is an abstraction of a PowerSupply.
 
-$Id: DellPowerSupply.py,v 1.2 2012/11/01 17:55:54 egor Exp $"""
+$Id: DellPowerSupply.py,v 1.3 2012/11/02 19:10:59 egor Exp $"""
 
-__version__ = "$Revision: 1.2 $"[11:-2]
+__version__ = "$Revision: 1.3 $"[11:-2]
 
 import inspect
 from Products.ZenModel.PowerSupply import *
@@ -115,14 +115,15 @@ class DellPowerSupply(PowerSupply, DellComponent):
 
     def _getSnmpIndex(self):
         snmpindex = self.__snmpindex
-        frame = inspect.currentframe(2)
+        frm = inspect.currentframe(2)
         try:
-            if frame.f_locals.get('oid') == '1.3.6.1.4.1.674.10892.1.600.20.1.6':
+            oid = frm.f_locals.get('oid') or ''
+            if oid.startswith('1.3.6.1.4.1.674.10892.1.600.20.1'):
                 snmpindex = self.vpsnmpindex
-            elif frame.f_locals.get('oid')=='1.3.6.1.4.1.674.10892.1.600.30.1.6':
+            elif oid.startswith('1.3.6.1.4.1.674.10892.1.600.30.1'):
                 snmpindex = self.apsnmpindex
         finally:
-            del frame
+            del frm
         return snmpindex
 
     def _setSnmpIndex(self, value):
