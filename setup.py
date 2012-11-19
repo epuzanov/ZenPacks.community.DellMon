@@ -5,7 +5,7 @@
 NAME = "ZenPacks.community.DellMon"
 VERSION = "2.5.0"
 AUTHOR = "Egor Puzanov"
-LICENSE = ""
+LICENSE = "GPLv2"
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.community']
 PACKAGES = ['ZenPacks', 'ZenPacks.community', 'ZenPacks.community.DellMon']
 INSTALL_REQUIRES = ['ZenPacks.community.deviceAdvDetail>=1.3']
